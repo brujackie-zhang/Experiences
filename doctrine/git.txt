@@ -1,0 +1,22 @@
+
+//git操作
+sudo chmod -R 777 www/
+git clone  git@192.168.0.6:reachmax/PDB.git
+git branch -a
+git checkout -b v2dev  //切换并创建本地分支
+git pull origin v2dev  //从远程分支拉取数据
+git checkout -b zhangjin_v2dev
+git status
+git checkout v2dev 
+git merge zhangjin_v2dev   //合并本地分支
+git branch -a
+git push origin v2dev      //把本地分支推到远程分支
+git checkout zhangjin_v2dev 
+
+//doctrine的配置
+php doctrine-cli.php orm:generate-entities models/doctrine/Entities
+mkdir -p models/doctrine/Entities
+php doctrine-cli.php orm:generate-entities models/doctrine/Entities
+php doctrine-cli.php orm:schema-tool:update --dump-sql
+php doctrine-cli.php orm:schema-tool:update --force
+

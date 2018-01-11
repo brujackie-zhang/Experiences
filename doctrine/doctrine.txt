@@ -1,0 +1,11 @@
+doctrine 维护数据库:
+# 首先建立好数据库
+# 生成mappings 下的 yml 文件
+php doctrine-cli.php orm:convert-mapping --from-database  yml models/doctrine/Mappings
+# 根据mappings 生成Entities 下的实体类
+php doctrine-cli.php orm:generate-entities models/doctrine/Entities
+# 打印 sql
+php doctrine-cli.php orm:schema-tool:update --dump-sql
+# 更新数据库
+php doctrine-cli.php orm:schema-tool:update --force
+
