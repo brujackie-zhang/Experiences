@@ -1,0 +1,107 @@
+#include<opencv2/core/core.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>  
+#include <iostream> 
+using namespace std;
+using namespace cv;
+
+IplImage *edge_Image, *edge_CannyImage;
+Mat saturtion_Image, saturtion_Image1;
+Mat binary_Image, binary_Image1;
+int contrastValue=80;
+int brightValue=40; 
+int saturationValue=255;
+Mat cb_Image, cb_Image1;
+
+void CannyTest(int threshold)
+{
+	cvCanny(edge_Image, edge_CannyImage, threshold, threshold * 3, 3);
+	cvShowImage("边缘检测图", edge_CannyImage);
+}
+
+static void ContrastAndBright(int, void *)
+{
+	namedWindow("二值图", 1);
+	for (int y = 0; y < cb_Image.rows; y++)
+	{
+		for (int x = 0; x < cb_Image.cols; x++)
+		{
+			for (int c = 0; c < 3; c++)
+			{
+				cb_Image1.at<Vec3b>(y, x)[c] = saturate_cast<uchar>((contrastValue*0.01)*(cb_Image.at<Vec3b>(y, x)[c]) + brightValue);
+			}
+		}
+	}
+	cb_Image1.copyTo(binary_Image);
+	cvtColor(cb_Image1, binary_Image, CV_BGR2GRAY);
+	binary_Image.copyTo(binary_Image1);
+	threshold(binary_Image, binary_Image1, 100, 254, CV_THRESH_BINARY);
+	imshow("二值图", binary_Image1);
+	imshow("效果图", cb_Image1);
+}
+
+void Saturation(int threshold)
+{
+	cvtColor(saturtion_Image, saturtion_Image1, CV_BGR2HSV);
+	int s = saturationValue - 255;
+	for (int i = 0; i < saturtion_Image1.rows; i++) {
+		for (int j = 0; j < saturtion_Image1.cols; j++) {
+			int s1 = saturtion_Image1.at<Vec3b>(i, j)[1];
+			s1 += s;
+			if (s1 < 0) {
+				s1 = 0;
+			}
+			if (s1 > 255) {
+				s1 = 255;
+			}
+			saturtion_Image1.at<Vec3b>(i, j)[1] = s1;
+		}
+	}
+	Mat image;
+	cvtColor(saturtion_Image1, image, CV_HSV2BGR);
+	imshow("饱和度调节", image);
+}
+int main()
+{
+	system("color 5F");
+	//边缘检测
+	edge_Image = cvLoadImage("54.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	edge_CannyImage = cvCreateImage(cvGetSize(edge_Image), IPL_DEPTH_8U, 1);
+	cvNamedWindow("原图");
+	cvNamedWindow("边缘检测图");
+
+	int thresholdEdge = 1;
+	cvCreateTrackbar("Threshold", "边缘检测图", &thresholdEdge, 300, CannyTest);
+	Mat image = imread("54.jpg");
+	imshow("原图", image);
+	CannyTest(1);
+	cvWaitKey();
+
+	cvDestroyWindow("原图");
+	cvDestroyWindow("边缘检测图");
+	cvReleaseImage(&edge_Image);
+	cvReleaseImage(&edge_CannyImage);
+	//亮度、对比度
+	cb_Image = imread("54.jpg");
+	if (!cb_Image.data)
+	{
+		cout << "图片读取错误！" << endl;
+		return false;
+	}
+	Mat zeros(cb_Image.size(), cb_Image.type());
+	zeros.copyTo(cb_Image1);
+	namedWindow("效果图", 1);
+	createTrackbar("对比度", "效果图", &contrastValue, 300, ContrastAndBright);
+	createTrackbar("亮  度", "效果图", &brightValue, 100, ContrastAndBright);
+	ContrastAndBright(contrastValue, 0);
+	ContrastAndBright(brightValue, 0);
+	waitKey(0);
+	//饱和度
+	saturtion_Image = imread("54.jpg");
+	namedWindow("饱和度调节", 1);
+	cvCreateTrackbar("饱和度", "饱和度调节", &saturationValue, 512, Saturation);
+	cvWaitKey(0);
+	return 0;
+}
+

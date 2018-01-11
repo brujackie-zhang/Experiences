@@ -1,0 +1,142 @@
+import cv2
+import math
+import numpy as np
+print 'Load Image'
+img1 = cv2.imread('1.jpg') #query image
+img2 = cv2.imread('2.jpg') #train image
+rows, cols, channels = img1.shape
+img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+
+img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
+imgGray1 = cv2.cvtColor(img1, cv2.COLOR_RGB2GRAY)
+imgGray2 = cv2.cvtColor(img2, cv2.COLOR_RGB2GRAY)
+print 'SURF Feature Detection'
+# initialize ORB object with default values
+surf = cv2.SURF(800)
+# find keypoints
+keypoint1, descriptor1 = surf.detectAndCompute(imgGray1, None)
+keypoint2, descriptor2 = surf.detectAndCompute(imgGray2, None)
+def keypointToPoint(keypoint):
+    '''
+    from keypoints to points
+    '''
+    point = np.zeros(len(keypoint) * 2, np.float32)   
+    for i in range(len(keypoint)):
+        point[i * 2] = keypoint[i].pt[0]
+        point[i * 2 + 1] = keypoint[i].pt[1]
+    point = point.reshape(-1,2)
+    return point
+point1 = keypointToPoint(keypoint1)       
+rightFeatures = keypointToPoint(keypoint2)
+print 'Calculate the Optical Flow Field'
+# how each left points moved across the 2 images
+lkParams = dict(winSize=(15,15), maxLevel=2, criteria=(3L,10,0.03))                         
+point2, status, error = cv2.calcOpticalFlowPyrLK(imgGray1, imgGray2, point1, None, **lkParams)
+# filter out points with high error
+rightLowErrPoints = {}
+for i in range(len(point2)):
+     if status[i][0] == 1 and error[i][0] < 12:
+         rightLowErrPoints[i] = point2[i]
+     else:
+         status[i] = 0
+bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+matches = bf.match(descriptor1, descriptor2)
+print 'matches:', len(matches)
+dist = []
+for m in matches:
+    dist.append(m.distance)
+# distance threshold
+thresDist = np.median(dist)
+good = []
+for m in matches:
+    if m.distance < thresDist:
+        good.append(m)
+print 'Good Matches:', len(good)
+# select keypoints from good matches
+points1 = []
+points2 = []
+for m in good:
+    points1.append(keypoint1[m.queryIdx].pt)
+    points2.append(keypoint2[m.trainIdx].pt)
+points1 = np.float32(points1)
+points2 = np.float32(points2)
+# combine two images into one
+view = drawMatches(img1, img2, points1, points2, colors)
+img5, img3 = drawEpilines(img1, img2, points1, points2)   
+displayMatchImage(view, img5, img3)
+# camera matrix from calibration
+K = np.array([[517.67386649, 0.0, 268.65952163], [0.0, 519.75461699, 215.58959128], [0.0, 0.0, 1.0]])   
+P, P1, E = calcPespectiveMat(K, F)   
+pointCloudX, pointCloudY, pointCloudZ, reprojError = triangulatePoints(points1, points2, K, E, P, P1)
+positionX, positionY, positionZ = transformToPosition(pointCloudX, pointCloudY, pointCloudZ, P1, K, scale=10.0)
+plotPointCloud(positionX, positionY, positionZ, colors)
+print 'Goodbye!'
+#opencv_haystack =cv2.imread('1.jpg')  
+#opencv_needle =cv2.imread('2.jpg')  
+#  
+#ngrey = cv2.cvtColor(opencv_needle, cv2.COLOR_BGR2GRAY)  
+#hgrey = cv2.cvtColor(opencv_haystack, cv2.COLOR_BGR2GRAY)  
+#  
+## build feature detector and descriptor extractor  
+#hessian_threshold = 85  
+#detector = cv2.SURF(hessian_threshold)  
+#useProvidedKeypoints=[]
+#hkeypoints, hdescriptors= detector.detect(hgrey,None)  
+#nkeypoints, ndescriptors= detector.detect(ngrey,None) 
+#  
+## extract vectors of size 64 from raw descriptors numpy arrays  
+#rowsize = len(hdescriptors) / len(hkeypoints)  
+#if rowsize > 1:  
+#    hrows = numpy.array(hdescriptors, dtype = numpy.float32).reshape((-1, rowsize))  
+#    nrows = numpy.array(ndescriptors, dtype = numpy.float32).reshape((-1, rowsize))  
+#    #print hrows.shape, nrows.shape  
+#else:  
+#    hrows = numpy.array(hdescriptors, dtype = numpy.float32)  
+#    nrows = numpy.array(ndescriptors, dtype = numpy.float32)  
+#    rowsize = len(hrows[0])  
+#  
+## kNN training - learn mapping from hrow to hkeypoints index  
+#samples = hrows  
+#responses = numpy.arange(len(hkeypoints), dtype = numpy.float32)  
+##print len(samples), len(responses)  
+#knn = cv2.KNearest()  
+#knn.train(samples,responses)  
+#  
+## retrieve index and value through enumeration  
+#count = 1  
+#  
+#for i, descriptor in enumerate(nrows):  
+#    descriptor = numpy.array(descriptor, dtype = numpy.float32).reshape((1, rowsize))  
+#    #print i, descriptor.shape, samples[0].shape  
+#    retval, results, neigh_resp, dists = knn.find_nearest(descriptor, 1)  
+#    res, dist =  int(results[0][0]), dists[0][0]  
+#    #print res, dist  
+#  
+#    if dist < 0.1:  
+#        count = count+1  
+#        # draw matched keypoints in red color  
+#        color = (0, 0, 255)  
+##    else:  
+##        # draw unmatched in blue color  
+##        color = (255, 0, 0)  
+#    # draw matched key points on haystack image  
+#        x,y = hkeypoints[res].pt  
+#        center = (int(x),int(y))  
+#        cv2.circle(opencv_haystack,center,2,color,-1)  
+#        # draw matched key points on needle image  
+#        x,y = nkeypoints[i].pt  
+#        center = (int(x),int(y))  
+#        cv2.circle(opencv_needle,center,2,color,-1)  
+#  
+#cv.ShowImage("Input Image", opencv_haystack)  
+#cv.waitKey(0)  
+#cv.ShowImage("The match Result", opencv_needle)  
+#cv.waitKey(0)  
+#  
+#print count  
+#if count>40:  
+#    print "Yes Success!"  
+#else:  
+#    print "False Face!"  
+##cv2.waitKey(0)  
+##cv2.destroyAllWindows() 

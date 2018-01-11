@@ -1,0 +1,1 @@
+/home/brujackie-zhang/workspace/opencv/Contrast_Bright/CMakeFiles/basic.dir

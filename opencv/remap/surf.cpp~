@@ -1,0 +1,129 @@
+////#include<opencv2/core/core.hpp>
+////#include<opencv2/highgui/highgui.hpp>
+////#include<opencv2/imgproc/imgproc.hpp>
+////#include<opencv2/nonfree/features2d.hpp>
+////#include<iostream>
+
+////using namespace std;
+////using namespace cv;
+
+////int main()
+////{
+////	Mat image=imread("1.jpg");
+////	vector<KeyPoint>keypoints;
+////	SurfFeatureDetector surf(2500.);
+////	surf.detect(image,keypoints);
+////	drawKeypoints(image,keypoints,image,Scalar(0,255,0),DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+////	namedWindow("Test");
+////	imshow("Test",image);
+////	waitKey(0);
+////	return 0;
+////}  
+//#include<opencv2/core/core.hpp>
+//#include<opencv2/highgui/highgui.hpp>
+//#include<opencv2/nonfree/features2d.hpp>
+//#include<opencv2/legacy/legacy.hpp>
+
+//using namespace std;
+//using namespace cv;
+
+//int main()
+//{
+//	Mat image1=imread("1.jpg");
+//	Mat image2=imread("2.jpg");	
+//	vector<KeyPoint>keypoints1,keypoints2;
+//	SurfFeatureDetector detector;
+//	detector.detect(image1,keypoints1);
+//	detector.detect(image2,keypoints2);
+//	SurfDescriptorExtractor surfDesc;
+//	Mat descriptors1,descriptors2;
+//	surfDesc.compute(image1,keypoints1,descriptors1);
+//	surfDesc.compute(image2,keypoints2,descriptors2);
+//	cout<<descriptors1<<" "<<endl;
+//	BruteForceMatcher<L2<float> >matcher;
+//	vector<DMatch>matches;
+//	matcher.match(descriptors1,descriptors2,matches);
+//	nth_element(matches.begin(),matches.begin()+25,matches.end());
+//	matches.erase(matches.begin()+25,matches.end());
+//	Mat imageMatches;
+//	drawMatches(image1,keypoints1,image2,keypoints2,matches,imageMatches,Scalar(255,255,0));
+//	namedWindow("image2");
+//	imshow("image2",imageMatches);
+//	waitKey(0);
+//	return 0;
+//	
+//}
+
+//#include<opencv2/highgui/highgui.hpp>
+//#include<opencv2/imgproc/imgproc.hpp>
+//#include <iostream>
+// 
+//using namespace std;
+//using namespace cv;
+// 
+//int main( )
+//{
+//  Mat srcImage, dstImage;
+//  Mat map_x, map_y;
+//  srcImage= imread("3.jpg", 1 );
+//  imshow("原始图",srcImage);
+//  dstImage.create(srcImage.size(), srcImage.type() );
+//  map_x.create(srcImage.size(), CV_32FC1 );
+//  map_y.create(srcImage.size(), CV_32FC1 );
+//  for(int j = 0; j < srcImage.rows;j++)
+//  {
+//    for(int i = 0; i < srcImage.cols;i++)
+//    {
+//      map_x.at<float>(j,i)= static_cast<float>(srcImage.cols - i);
+//      map_y.at<float>(j,i)= static_cast<float>(j);
+//    }
+//  }
+//  remap(srcImage, dstImage, map_x, map_y, CV_INTER_LINEAR, BORDER_CONSTANT, Scalar(0,0,0) );
+//  imshow("效果图", dstImage );
+//  waitKey(0);
+//  return 0;
+//}
+
+#include <iostream>
+#include <fstream>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/stitching/stitcher.hpp>
+
+using namespace std;
+using namespace cv;
+
+bool try_use_gpu = false;
+vector<Mat> imgs;
+string result_name = "result.jpg";
+
+int main(int argc, char* argv[])
+{
+
+Mat img=imread("1.jpg");
+imshow("1",imgs);
+imgs.push_back(img);
+img=imread("2.jpg");
+imshow("2",imgs);
+imgs.push_back(img);
+img=imread("3.jpg");
+imshow("3",imgs);
+imgs.push_back(img);
+img=imread("4.jpg");
+imshow("4",imgs);
+imgs.push_back(img);
+
+Mat panorama;
+Stitcher stitcher = Stitcher::createDefault(try_use_gpu);
+Stitcher::Status status = stitcher.stitch(imgs, panorama);
+
+if (status != Stitcher::OK)
+{
+cout << "Can't stitch images, error code = " << int(status) << endl;
+return -1;
+}
+imshow("panorama",panorama);
+imwrite(result_name, panorama);
+waitKey(0);
+return 0;
+}
+

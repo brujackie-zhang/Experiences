@@ -1,0 +1,3 @@
+/home/brujackie-zhang/workspace/opencv/Seam_Carving/CMakeFiles/edit_cache.dir
+/home/brujackie-zhang/workspace/opencv/Seam_Carving/CMakeFiles/rebuild_cache.dir
+/home/brujackie-zhang/workspace/opencv/Seam_Carving/CMakeFiles/seam.dir
