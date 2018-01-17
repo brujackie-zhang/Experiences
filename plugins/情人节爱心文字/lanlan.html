@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>lanlan</title>
+
+<style type="text/css">
+@font-face {
+	font-family: digit;
+	src: url('digital-7_mono.ttf') format("truetype");
+}
+</style>
+
+<link href="css/default.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/garden.js"></script>
+<script type="text/javascript" src="js/functions.js"></script>
+
+</head>
+
+<body>
+
+<div id="mainDiv">
+	<div id="content">
+		<div id="code" style="margin-top:0">
+			<span class="comments">/**</span><br />
+			<span class="space"/><span class="comments">*丙申己亥辛丑日邂逅,</span><br />
+			<span class="space"/><span class="comments">*丙申己亥甲寅日.</span><br />
+			<span class="space"/><span class="comments">*/</span><br />
+			Boy's name = <span class="keyword">你的笨蛋</span><br />
+			Girl's name = <span class="keyword">小艺</span><br />
+			<span class="comments">// 子夜青灯盏盏. </span><br />
+			一夕尔觏蓺心蕙，<br />
+			<span class="comments">// 阑珊.</span><br />
+			清秋褚松花开阑。<br />
+			<span class="comments">// 伊人入梦渺渺红尘.</span><br />
+			鲛绡依梦似你眸，<br />
+			<span class="comments">// 撷一片叶.</span><br />
+			梦舟轩翥始愿旻。<br />
+			<span class="comments">// 淡雅清闻.</span><br />
+			皎皎寒夜漫蓝溪，<br />
+			<span class="comments">// 仰望皓月当空.</span><br />
+			瑊玏韶华彰艺馨。<br />
+			<span class="comments">// 寄</span><br />
+			蟾宫折桂践梁濠，<br />
+			<span class="comments">// 相思相念.</span><br />
+			行懿形姝谓君兰！<br />
+			<span class="comments">// 久久.</span><br />
+			The boy has a dream;<br />
+			<span class="comments">// 漫.</span><br />
+			The boy wants the girl could well have been happy.<br />
+			<br>
+			<span style="font-size:14px;color:#0088bb;">I want to say:</span><br />
+			<span class="keyword">不忘初心，幻作山间古城风，朝阳与晚霞相伴，漫步山野，徜徉书房，最后，是你！</span><br />
+		</div>
+		<audio src="./小幸运.mp3" autobuffer autoloop loop autoplay></audio>
+		<div id="loveHeart">
+			<canvas id="garden"></canvas>
+			<div id="words">
+				<div id="messages">
+					小艺，这是我们邂逅的日子。
+					<div id="elapseClock"></div>
+				</div>
+				<div id="loveu">
+					Bady, I love you forever!<br/>
+					<div class="signature">-- 爱你的人</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="copyright">
+		<a href="#">....</a><br />
+		<a href="#">....</a><br />
+	</div>
+</div>
+
+<script type="text/javascript">
+var offsetX = $("#loveHeart").width() / 2;
+var offsetY = $("#loveHeart").height() / 2 - 55;
+var together = new Date("2016/11/28,22:06:08");
+
+if (!document.createElement('canvas').getContext) {
+	var msg = document.createElement("div");
+	msg.id = "errorMsg";
+	msg.innerHTML = "Your browser doesn't support HTML5!<br/>Recommend use Chrome 14+/IE 9+/Firefox 7+/Safari 4+"; 
+	document.body.appendChild(msg);
+	$("#code").css("display", "none")
+	$("#copyright").css("position", "absolute");
+	$("#copyright").css("bottom", "10px");
+	document.execCommand("stop");
+} else {
+	setTimeout(function () {
+		startHeartAnimation();
+	}, 5000);
+
+	timeElapse(together);
+	setInterval(function () {
+		timeElapse(together);
+	}, 500);
+
+	adjustCodePosition();
+	$("#code").typewriter();
+}
+</script>
+
+</body>
+</html>
